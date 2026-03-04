@@ -12,7 +12,7 @@ import os
 import urllib.parse
 from pathlib import Path
 
-PORT = 8000
+PORT = int(os.environ.get("PORT", 8000))
 BASE_DIR = Path(os.path.abspath(__file__)).parent
 DB_PATH = BASE_DIR / "data" / "grimoire.db"
 STATIC_PATH = BASE_DIR / "static"
