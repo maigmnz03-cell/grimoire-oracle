@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GRIMOIRE — Oráculo del Terror</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📼</text></svg>">
+<link href="https://fonts.googleapis.com/css2?family=VT323&family=Special+Elite&family=Bebas+Neue&family=Courier+Prime:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --black:#050505;--dark:#0d0d0d;--panel:#111114;--border:#2a1a1a;
+  --red:#cc0000;--red-b:#ff1a1a;--red-g:#ff3333;--cyan:#00ffcc;
+  --cyan-d:#00cc99;--yellow:#ffcc00;--white:#f0ece0;--grey:#888880;
+  --f1:'VT323',monospace;--f2:'Bebas Neue',sans-serif;
+  --f3:'Special Elite',serif;--f4:'Courier Prime',monospace;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--black);color:var(--white);font-family:var(--f3);min-height:100vh;overflow-x:hidden;cursor:none}
+
+/* cursor */
+#cur{position:fixed;width:16px;height:16px;border:1.5px solid var(--red);border-radius:50%;pointer-events:none;z-index:99999;transform:translate(-50%,-50%);transition:transform .1s;mix-blend-mode:difference}
+#dot{position:fixed;width:4px;height:4px;background:var(--red-b);border-radius:50%;pointer-events:none;z-index:99999;transform:translate(-50%,-50%)}
+
+/* vhs overlay */
+#vhs{position:fixed;inset:0;pointer-events:none;z-index:9998;overflow:hidden}
+#vhs::before{content:'';position:absolute;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.32) 2px,rgba(0,0,0,.32) 4px);animation:scanroll 10s linear infinite;opacity:.35}
+#vhs::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,rgba(255,0,0,.015) 0%,transparent 40%,rgba(0,255,204,.015) 70%,transparent 100%);animation:chroma .15s steps(1) infinite}
+@keyframes scanroll{0%{background-position:0 0}100%{background-position:0 100px}}
+@keyframes chroma{0%,100%{opacity:1;transform:translate(0)}25%{transform:translate(-1px,0)}75%{transform:translate(1px,0)}}
+
+.gl{position:fixed;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--cyan),transparent);opacity:0;pointer-events:none;z-index:9997;animation:track 7s ease-in-out infinite}
+.gl:nth-child(2){animation-delay:3s;background:linear-gradient(90deg,transparent,var(--red),transparent)}
+.gl:nth-child(3){animation-delay:5.5s}
+@keyframes track{0%,88%,100%{opacity:0;top:-5px}89%{opacity:.7;top:25%}91%{opacity:.3;top:25.5%}93%{opacity:.8;top:26%}96%{opacity:0;top:105%}}
+
+/* nav */
+.nav{position:fixed;top:0;left:0;right:0;z-index:500;display:flex;justify-content:space-between;align-items:center;padding:.55rem 2rem;background:rgba(5,5,5,.97);border-bottom:1px solid var(--border)}
+.nav::after{content:'';position:absolute;bottom:-1px;left:0;right:0;height:1px;background:var(--red);opacity:.5;box-shadow:0 0 6px var(--red)}
+.nav-logo{font-family:var(--f1);font-size:2rem;color:var(--red-b);letter-spacing:.1em;text-shadow:0 0 10px var(--red),0 0 25px rgba(204,0,0,.4);text-decoration:none;cursor:none}
+.rec{display:flex;align-items:center;gap:.35rem;font-family:var(--f1);font-size:1.1rem;color:var(--red-b)}
+.rec-dot{width:8px;height:8px;background:var(--red-b);border-radius:50%;animation:blink 1.2s ease-in-out infinite;box-shadow:0 0 5px var(--red-b)}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+.nav-links{display:flex;gap:1.5rem;list-style:none}
+.nav-links a{font-family:var(--f2);font-size:1rem;letter-spacing:.12em;color:var(--grey);text-decoration:none;transition:color .2s,text-shadow .2s;cursor:none}
+.nav-links a:hover,.nav-links a.active{color:var(--cyan);text-shadow:0 0 8px var(--cyan)}
+
+/* views */
+.view{display:none;min-height:100vh}
+.view.active{display:block}
+
+/* ── HOME ── */
+#view-home{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;text-align:center;padding:5rem 2rem 3rem;position:relative}
+#view-home.active{display:flex}
+.home-bg{position:absolute;inset:0;background:radial-gradient(ellipse 55% 35% at 50% 50%,rgba(204,0,0,.06),transparent),radial-gradient(ellipse 90% 70% at 50% 90%,rgba(0,0,0,.7),transparent);pointer-events:none}
+.tape-icon{font-size:4rem;margin-bottom:1.5rem;filter:drop-shadow(0 0 18px rgba(204,0,0,.9));animation:float 3s ease-in-out infinite}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+.home-h1{font-family:var(--f1);font-size:clamp(4rem,14vw,8.5rem);line-height:.9;color:var(--white);text-shadow:3px 0 0 rgba(255,0,0,.7),-3px 0 0 rgba(0,255,204,.5),0 0 35px rgba(204,0,0,.4);letter-spacing:.05em;margin-bottom:.4rem;animation:tglitch 9s infinite}
+@keyframes tglitch{0%,93%,100%{text-shadow:3px 0 0 rgba(255,0,0,.7),-3px 0 0 rgba(0,255,204,.5),0 0 35px rgba(204,0,0,.4);transform:translate(0)}94%{text-shadow:5px 0 0 rgba(255,0,0,.9),-5px 0 0 rgba(0,255,204,.8);transform:translate(-2px)}95%{text-shadow:-3px 0 0 rgba(255,0,0,.7),3px 0 0 rgba(0,255,204,.6);transform:translate(3px)}96%{transform:translate(0)}}
+.home-sub{font-family:var(--f1);font-size:1.4rem;color:var(--cyan-d);letter-spacing:.3em;text-shadow:0 0 10px var(--cyan);margin-bottom:.3rem}
+.home-year{font-family:var(--f4);font-size:.72rem;color:var(--grey);letter-spacing:.2em;margin-bottom:2.5rem;opacity:.55}
+.vhs-div{width:100%;max-width:420px;height:2px;background:linear-gradient(90deg,transparent,var(--red),var(--red-b),var(--red),transparent);margin:0 auto 2.5rem;box-shadow:0 0 8px var(--red)}
+.home-desc{font-family:var(--f4);font-size:.85rem;color:var(--grey);max-width:460px;line-height:1.8;margin-bottom:2.5rem;opacity:.8}
+.btn-primary{font-family:var(--f1);font-size:1.8rem;letter-spacing:.15em;color:var(--black);background:var(--red-b);border:none;padding:.55rem 3rem .35rem;cursor:none;box-shadow:4px 4px 0 var(--red),0 0 20px rgba(204,0,0,.4);transition:all .18s}
+.btn-primary:hover{background:var(--red-g);box-shadow:6px 6px 0 var(--red),0 0 28px rgba(255,50,50,.6);transform:translate(-1px,-1px)}
+.btn-primary:active{transform:translate(2px,2px);box-shadow:2px 2px 0 var(--red)}
+.home-stats{margin-top:2rem;font-family:var(--f4);font-size:.7rem;color:var(--grey);opacity:.5;letter-spacing:.1em}
+.home-stats span{color:var(--cyan-d)}
+
+/* ── SURVEY POPUP ── */
+#survey-overlay{display:none;position:fixed;inset:0;z-index:800;background:rgba(0,0,0,.92);backdrop-filter:blur(3px);align-items:center;justify-content:center;padding:1rem}
+#survey-overlay.active{display:flex}
+.s-box{background:var(--panel);border:1px solid var(--red);box-shadow:0 0 30px rgba(204,0,0,.3);width:100%;max-width:680px;max-height:92vh;overflow-y:auto;animation:popin .3s cubic-bezier(.34,1.56,.64,1)}
+@keyframes popin{from{opacity:0;transform:scale(.9) translateY(20px)}to{opacity:1;transform:scale(1) translateY(0)}}
+.s-top{background:var(--red);padding:.4rem 1rem;display:flex;justify-content:space-between;align-items:center}
+.s-top-t{font-family:var(--f1);font-size:1.1rem;color:var(--black);letter-spacing:.15em}
+.s-top-c{font-family:var(--f4);font-size:.72rem;color:var(--black);opacity:.8}
+.s-bar{height:3px;background:var(--border)}
+.s-bar-fill{height:100%;background:var(--cyan);box-shadow:0 0 5px var(--cyan);transition:width .4s ease}
+.s-body{padding:1.8rem 2rem 1.5rem}
+.q-cat{font-family:var(--f4);font-size:.68rem;letter-spacing:.25em;text-transform:uppercase;color:var(--cyan-d);margin-bottom:.55rem;display:flex;align-items:center;gap:.4rem}
+.q-cat::before{content:'>>';color:var(--red);font-family:var(--f4)}
+.q-txt{font-family:var(--f1);font-size:clamp(1.35rem,3.5vw,1.85rem);color:var(--white);line-height:1.2;margin-bottom:.35rem;text-shadow:1px 0 0 rgba(255,0,0,.3),-1px 0 0 rgba(0,255,204,.2)}
+.q-hint{font-family:var(--f4);font-size:.73rem;color:var(--grey);opacity:.7;margin-bottom:1.4rem;padding-left:.5rem;border-left:2px solid var(--red)}
+
+.opts{display:grid;gap:.6rem;margin-bottom:1.4rem}
+.opts.c2{grid-template-columns:1fr 1fr}
+.opts.c3{grid-template-columns:1fr 1fr 1fr}
+.opt{border:1px solid var(--border);padding:.65rem .9rem;cursor:none;transition:all .15s;background:rgba(255,255,255,.02);display:flex;align-items:flex-start;gap:.65rem;position:relative}
+.opt:hover{border-color:var(--red);background:rgba(204,0,0,.07)}
+.opt.sel{border-color:var(--red-b);background:rgba(204,0,0,.11);box-shadow:inset 2px 0 0 var(--red-b)}
+.opt.sel::after{content:'✓';position:absolute;top:.45rem;right:.7rem;font-family:var(--f4);font-size:.78rem;color:var(--red-b)}
+.opt-ic{font-size:1.15rem;flex-shrink:0;margin-top:1px}
+.opt-t{font-family:var(--f2);font-size:.98rem;letter-spacing:.04em;color:var(--white);line-height:1.1}
+.opt-d{font-family:var(--f4);font-size:.67rem;color:var(--grey);margin-top:.18rem;line-height:1.4}
+
+.sl-wrap{margin-bottom:1.4rem}
+.sl-labels{display:flex;justify-content:space-between;font-family:var(--f4);font-size:.67rem;color:var(--grey);margin-bottom:.45rem}
+input[type=range]{width:100%;height:4px;-webkit-appearance:none;appearance:none;background:linear-gradient(90deg,var(--red) var(--pct,50%),var(--border) var(--pct,50%));outline:none;cursor:none}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;background:var(--red-b);border:2px solid var(--white);cursor:none;box-shadow:0 0 8px var(--red);transition:box-shadow .2s}
+input[type=range]::-webkit-slider-thumb:hover{box-shadow:0 0 14px var(--red-b)}
+.sl-val{text-align:center;font-family:var(--f1);font-size:1.1rem;color:var(--cyan-d);margin-top:.45rem}
+
+.q-ta{width:100%;background:rgba(255,255,255,.025);border:1px solid var(--border);color:var(--white);font-family:var(--f4);font-size:.84rem;padding:.8rem 1rem;resize:none;outline:none;min-height:95px;line-height:1.6;transition:border-color .2s;margin-bottom:1.4rem}
+.q-ta:focus{border-color:var(--red);box-shadow:0 0 8px rgba(204,0,0,.18)}
+.q-ta::placeholder{color:var(--grey);opacity:.45;font-style:italic}
+
+.q-nav{display:flex;justify-content:space-between;align-items:center;padding-top:.5rem;border-top:1px solid var(--border)}
+.btn-back{font-family:var(--f2);font-size:.9rem;letter-spacing:.1em;color:var(--grey);background:transparent;border:1px solid var(--border);padding:.45rem 1.2rem;cursor:none;transition:all .2s}
+.btn-back:hover{color:var(--white);border-color:var(--grey)}
+.btn-fwd{font-family:var(--f1);font-size:1.35rem;letter-spacing:.1em;color:var(--black);background:var(--red-b);border:none;padding:.3rem 1.8rem .1rem;cursor:none;box-shadow:3px 3px 0 var(--red);transition:all .15s}
+.btn-fwd:hover{background:var(--red-g);box-shadow:4px 4px 0 var(--red);transform:translate(-1px,-1px)}
+.btn-fwd:disabled{opacity:.3;pointer-events:none}
+.skip-btn{font-family:var(--f4);font-size:.7rem;color:var(--grey);opacity:.5;cursor:none;text-decoration:underline;background:none;border:none;transition:opacity .2s}
+.skip-btn:hover{opacity:.8}
+
+/* ── LOADING ── */
+#view-loading{display:none}
+#view-loading.active{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;text-align:center;padding:2rem}
+.ld-icon{font-size:5rem;margin-bottom:1.5rem;animation:spin 1.5s linear infinite;filter:drop-shadow(0 0 14px var(--red))}
+@keyframes spin{0%{transform:rotate(0)}100%{transform:rotate(360deg)}}
+.ld-txt{font-family:var(--f1);font-size:1.8rem;color:var(--red-b);text-shadow:0 0 10px var(--red);letter-spacing:.1em;margin-bottom:.4rem;animation:flicker 2s infinite}
+@keyframes flicker{0%,97%,100%{opacity:1}98%{opacity:.3}}
+.ld-sub{font-family:var(--f4);font-size:.73rem;color:var(--grey);opacity:.55;letter-spacing:.15em}
+
+/* ── RESULTS ── */
+#view-results{padding:5.5rem 1.5rem 4rem;max-width:1060px;margin:0 auto}
+.res-hdr{margin-bottom:2.5rem;display:flex;align-items:baseline;gap:1rem;border-bottom:1px solid var(--border);padding-bottom:1rem}
+.res-hdr::before{content:'▶ REC';font-family:var(--f1);font-size:1.2rem;color:var(--red-b);text-shadow:0 0 8px var(--red);animation:blink 1.2s infinite;flex-shrink:0}
+.res-title{font-family:var(--f1);font-size:clamp(1.5rem,4vw,2.2rem);color:var(--white);letter-spacing:.05em;text-shadow:2px 0 0 rgba(255,0,0,.5)}
+
+/* main card */
+.mc{display:grid;grid-template-columns:250px 1fr;border:1px solid var(--red);background:var(--panel);margin-bottom:2rem;box-shadow:4px 4px 0 var(--red),0 0 28px rgba(204,0,0,.14);animation:slidein .5s ease-out;position:relative;overflow:hidden}
+@keyframes slidein{from{opacity:0;transform:translateX(-18px)}to{opacity:1;transform:translateX(0)}}
+.mc-badge{position:absolute;top:0;left:0;background:var(--red-b);color:var(--black);font-family:var(--f1);font-size:.88rem;letter-spacing:.15em;padding:.18rem .8rem;z-index:2}
+.pw{position:relative;overflow:hidden;background:#0d0d0d;min-height:340px}
+.pw img{width:100%;height:100%;object-fit:cover;display:block;filter:saturate(.8) contrast(1.1);transition:filter .4s,transform .4s}
+.mc:hover .pw img{filter:saturate(1) contrast(1.1);transform:scale(1.03)}
+.pw-vhs{position:absolute;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,.09) 3px,rgba(0,0,0,.09) 4px);pointer-events:none}
+.no-poster{width:100%;height:100%;min-height:340px;display:flex;flex-direction:column;align-items:center;justify-content:center;background:linear-gradient(135deg,#180000,#0d0d0d);color:var(--red);font-size:3.5rem;gap:.5rem}
+.no-poster span{font-family:var(--f4);font-size:.62rem;color:var(--grey);opacity:.4}
+
+.cb{padding:1.5rem 1.8rem;display:flex;flex-direction:column}
+.tags{display:flex;gap:.45rem;flex-wrap:wrap;margin-bottom:.9rem}
+.tag{font-family:var(--f4);font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;padding:.18rem .55rem;border:1px solid}
+.ty{color:var(--yellow);border-color:rgba(255,204,0,.3)}
+.ts{color:var(--red-b);border-color:rgba(204,0,0,.4)}
+.tv{color:var(--grey);border-color:var(--border)}
+.tg{color:var(--cyan-d);border-color:rgba(0,255,204,.2)}
+.tl{color:var(--grey);border-color:var(--border)}
+.mc-title{font-family:var(--f1);font-size:clamp(1.4rem,3.2vw,2rem);color:var(--white);line-height:1.1;margin-bottom:.25rem;text-shadow:2px 0 0 rgba(255,0,0,.4)}
+.mc-tl{font-family:var(--f4);font-size:.76rem;color:var(--red-b);font-style:italic;margin-bottom:.9rem;opacity:.8}
+.mc-ov{font-family:var(--f4);font-size:.82rem;color:var(--grey);line-height:1.7;flex:1;margin-bottom:1.1rem}
+.sc-bar{height:3px;background:var(--border);margin-bottom:1.1rem;position:relative}
+.sc-fill{height:100%;background:linear-gradient(90deg,var(--red),var(--red-b));box-shadow:0 0 5px var(--red);transition:width 1s ease-out}
+.sc-lbl{position:absolute;right:0;top:-1.3rem;font-family:var(--f4);font-size:.62rem;color:var(--grey)}
+.ca{display:flex;gap:.7rem;flex-wrap:wrap}
+.btn-watch{font-family:var(--f1);font-size:1.3rem;letter-spacing:.1em;color:var(--black);background:var(--red-b);border:none;padding:.25rem 1.8rem .1rem;cursor:none;box-shadow:3px 3px 0 var(--red);transition:all .15s}
+.btn-watch:hover{background:var(--red-g);transform:translate(-1px,-1px);box-shadow:4px 4px 0 var(--red)}
+.btn-skip-r{font-family:var(--f2);font-size:.85rem;letter-spacing:.1em;color:var(--grey);background:transparent;border:1px solid var(--border);padding:.4rem 1.2rem;cursor:none;transition:all .2s}
+.btn-skip-r:hover{border-color:var(--grey);color:var(--white)}
+
+/* sec cards */
+.sec-lbl{font-family:var(--f4);font-size:.68rem;letter-spacing:.2em;color:var(--grey);opacity:.45;text-transform:uppercase;margin-bottom:.7rem;margin-top:.3rem;display:flex;align-items:center;gap:.5rem}
+.sec-lbl::before,.sec-lbl::after{content:'─────';opacity:.3}
+.sec-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:.9rem}
+.sc{border:1px solid var(--border);background:var(--panel);overflow:hidden;transition:all .2s;cursor:none}
+.sc:hover{border-color:rgba(204,0,0,.5);box-shadow:3px 3px 0 var(--red)}
+.sp{height:135px;overflow:hidden;position:relative;background:#0d0d0d}
+.sp img{width:100%;height:100%;object-fit:cover;filter:saturate(.65);display:block;transition:filter .3s,transform .3s}
+.sc:hover .sp img{filter:saturate(1);transform:scale(1.05)}
+.sp-vhs{position:absolute;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,.1) 3px,rgba(0,0,0,.1) 4px);pointer-events:none}
+.sb{padding:.75rem}
+.st{font-family:var(--f2);font-size:.92rem;color:var(--white);margin-bottom:.18rem;line-height:1.2}
+.sy{font-family:var(--f4);font-size:.66rem;color:var(--yellow);margin-bottom:.18rem}
+.ss{font-family:var(--f4);font-size:.66rem;color:var(--red-b);margin-bottom:.55rem}
+.so{font-family:var(--f4);font-size:.66rem;color:var(--grey);line-height:1.5;margin-bottom:.6rem;display:-webkit-box;-webkit-line-clamp:3;line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.sa{display:flex;gap:.35rem}
+.bsw{font-family:var(--f1);font-size:.95rem;color:var(--black);background:var(--red);border:none;padding:.1rem .7rem;cursor:none;transition:background .15s}
+.bsw:hover{background:var(--red-b)}
+.bsk{font-family:var(--f4);font-size:.63rem;color:var(--grey);background:transparent;border:1px solid var(--border);padding:.2rem .55rem;cursor:none;transition:all .2s}
+.bsk:hover{border-color:var(--grey)}
+
+.res-footer{text-align:center;margin-top:2.5rem}
+.btn-redo{font-family:var(--f1);font-size:1.3rem;letter-spacing:.1em;color:var(--grey);background:transparent;border:1px solid var(--border);padding:.35rem 2rem .15rem;cursor:none;transition:all .2s}
+.btn-redo:hover{border-color:var(--red);color:var(--white);box-shadow:2px 2px 0 var(--red)}
+
+/* ── LIBRARY ── */
+#view-library{padding:5.5rem 1.5rem 4rem;max-width:900px;margin:0 auto}
+.lib-h{margin-bottom:2rem}
+.lib-h h2{font-family:var(--f1);font-size:2.5rem;color:var(--white);text-shadow:2px 0 0 rgba(255,0,0,.5);letter-spacing:.05em}
+.lib-h p{font-family:var(--f4);font-size:.73rem;color:var(--grey);opacity:.55;margin-top:.2rem}
+.lib-empty{text-align:center;padding:5rem 2rem;opacity:.3}
+.lib-empty span{font-size:4rem;display:block;margin-bottom:1rem}
+.lib-empty p{font-family:var(--f4);font-size:.88rem;color:var(--grey)}
+.lib-grid{display:grid;gap:.9rem}
+.lc{display:grid;grid-template-columns:95px 1fr;border:1px solid var(--border);background:var(--panel);overflow:hidden;transition:border-color .2s}
+.lc:hover{border-color:rgba(204,0,0,.35)}
+.lp{height:142px;overflow:hidden;background:#0d0d0d}
+.lp img{width:100%;height:100%;object-fit:cover;filter:saturate(.55);display:block}
+.lb{padding:.9rem 1.1rem;display:flex;flex-direction:column}
+.lt{font-family:var(--f2);font-size:1.05rem;color:var(--white);margin-bottom:.15rem}
+.ly{font-family:var(--f4);font-size:.68rem;color:var(--yellow);margin-bottom:.7rem}
+.skr{display:flex;gap:3px;margin-bottom:.55rem}
+.skb{background:none;border:none;font-size:1.1rem;cursor:none;opacity:.2;transition:all .15s;filter:grayscale(1);padding:0}
+.skb:hover,.skb.lit{opacity:1;filter:none;text-shadow:0 0 8px rgba(204,0,0,.8)}
+.lrv{width:100%;background:rgba(255,255,255,.02);border:1px solid var(--border);color:var(--white);font-family:var(--f4);font-size:.73rem;padding:.45rem .65rem;resize:none;outline:none;min-height:52px;transition:border-color .2s}
+.lrv:focus{border-color:rgba(204,0,0,.4)}
+.lrv::placeholder{color:var(--grey);opacity:.4}
+.la{display:flex;gap:.45rem;margin-top:.45rem;align-items:center}
+.bsv{font-family:var(--f1);font-size:.95rem;color:var(--black);background:var(--red);border:none;padding:.1rem .9rem;cursor:none;transition:background .15s}
+.bsv:hover{background:var(--red-b)}
+.brm{font-family:var(--f4);font-size:.63rem;color:var(--grey);background:none;border:1px solid var(--border);padding:.2rem .55rem;cursor:none;opacity:.45;transition:opacity .2s}
+.brm:hover{opacity:1}
+.sok{font-family:var(--f4);font-size:.66rem;color:var(--cyan-d);opacity:0;transition:opacity .3s}
+.sok.show{opacity:1}
+
+/* ── SYNC ── */
+#view-sync{padding:5.5rem 1.5rem 4rem;max-width:700px;margin:0 auto;text-align:center}
+.sy-h{font-family:var(--f1);font-size:2.5rem;color:var(--white);text-shadow:2px 0 0 rgba(255,0,0,.5);margin-bottom:.3rem}
+.sy-s{font-family:var(--f4);font-size:.76rem;color:var(--grey);opacity:.55;margin-bottom:2.5rem}
+.sy-stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem;margin-bottom:2.5rem}
+.ss2{border:1px solid var(--border);padding:1.2rem .5rem}
+.ss2 span:first-child{font-family:var(--f1);font-size:2.5rem;color:var(--red-b);text-shadow:0 0 10px var(--red);display:block}
+.ss2 span:last-child{font-family:var(--f4);font-size:.63rem;color:var(--grey);opacity:.55;letter-spacing:.1em;text-transform:uppercase}
+.sy-bw{display:none;margin-bottom:1.4rem}
+.sy-bg{height:4px;background:var(--border);margin-bottom:.55rem}
+.sy-bf{height:100%;background:var(--red-b);box-shadow:0 0 7px var(--red);transition:width .3s;width:0}
+.sy-st{font-family:var(--f4);font-size:.7rem;color:var(--grey);opacity:.55}
+.sy-note{font-family:var(--f4);font-size:.7rem;color:var(--grey);opacity:.38;margin-top:1.5rem;line-height:1.9}
+
+/* toast */
+.toast{position:fixed;bottom:1.5rem;right:1.5rem;background:var(--panel);border:1px solid var(--red);color:var(--white);font-family:var(--f4);font-size:.78rem;padding:.75rem 1.1rem;z-index:9100;max-width:290px;transform:translateX(200%);transition:transform .35s;box-shadow:3px 3px 0 var(--red),0 0 14px rgba(204,0,0,.3)}
+.toast.show{transform:translateX(0)}
+
+/* responsive */
+@media(max-width:700px){
+  .mc{grid-template-columns:1fr}
+  .pw{min-height:210px}
+  .opts.c2,.opts.c3{grid-template-columns:1fr 1fr}
+  .sy-stats{grid-template-columns:1fr 1fr}
+  .lc{grid-template-columns:80px 1fr}
+  .lp{height:120px}
+  .nav{padding:.5rem 1rem}
+  .nav-links{gap:1rem}
+}
+@media(max-width:440px){
+  .opts.c3{grid-template-columns:1fr 1fr}
+  .home-h1{font-size:3.5rem}
+}
+::-webkit-scrollbar{width:4px}
+::-webkit-scrollbar-track{background:var(--black)}
+::-webkit-scrollbar-thumb{background:var(--red)}
+::selection{background:rgba(204,0,0,.4);color:var(--white)}
+</style>
+</head>
+<body>
+
+<div id="cur"></div><div id="dot"></div>
+<div id="vhs"><div class="gl"></div><div class="gl"></div><div class="gl"></div></div>
+
+<nav class="nav">
+  <a class="nav-logo" href="#" onclick="showV('home');return false">📼 GRIMOIRE</a>
+  <div class="rec"><div class="rec-dot"></div>REC</div>
+  <ul class="nav-links">
+    <li><a id="nav-home" class="active" href="#" onclick="showV('home');return false">INICIO</a></li>
+    <li><a id="nav-library" href="#" onclick="showV('library');return false">VIDEOTECA</a></li>
+    <li><a id="nav-sync" href="#" onclick="showV('sync');return false">CATÁLOGO</a></li>
+  </ul>
+</nav>
+
+<!-- HOME -->
+<section id="view-home" class="view active">
+  <div class="home-bg"></div>
+  <span class="tape-icon">📼</span>
+  <h1 class="home-h1">GRIMOIRE</h1>
+  <p class="home-sub">ORÁCULO DEL TERROR</p>
+  <p class="home-year">EST. 1984 · VIDEOCLUB MALDITO · V2.0</p>
+  <div class="vhs-div"></div>
+  <p class="home-desc">Introduce tu cinta. Responde las preguntas del oráculo.<br>Recibe tu condena cinematográfica perfecta.</p>
+  <button class="btn-primary" onclick="startSurvey()">▶ CONSULTAR AL ORÁCULO</button>
+  <p class="home-stats" id="home-stats">Cargando catálogo...</p>
+</section>
+
+<!-- SURVEY POPUP -->
+<div id="survey-overlay">
+  <div class="s-box">
+    <div class="s-top">
+      <span class="s-top-t">📼 ORÁCULO — SESIÓN ACTIVA</span>
+      <span class="s-top-c" id="q-counter">1 / 10</span>
+    </div>
+    <div class="s-bar"><div class="s-bar-fill" id="q-prog" style="width:10%"></div></div>
+    <div class="s-body" id="q-body"></div>
+  </div>
+</div>
+
+<!-- LOADING -->
+<section id="view-loading" class="view">
+  <div class="ld-icon">⚙️</div>
+  <p class="ld-txt" id="ld-msg">REBOBINANDO...</p>
+  <p class="ld-sub">EL ORÁCULO CONSULTA EL ARCHIVO</p>
+</section>
+
+<!-- RESULTS -->
+<section id="view-results" class="view">
+  <div class="res-hdr"><h2 class="res-title" id="res-title">TU PELÍCULA ESTA NOCHE</h2></div>
+  <div id="res-content"></div>
+  <div class="res-footer">
+    <p style="font-family:var(--f4);font-size:.7rem;color:var(--grey);opacity:.38;margin-bottom:.9rem">¿No te convence? Rebobina y vuelve a consultar al oráculo.</p>
+    <button class="btn-redo" onclick="startSurvey()">↺ REBOBINAR</button>
+  </div>
+</section>
+
+<!-- LIBRARY -->
+<section id="view-library" class="view">
+  <div class="lib-h"><h2>TU VIDEOTECA</h2><p>Las cintas que el oráculo te ha recomendado</p></div>
+  <div id="lib-content"></div>
+</section>
+
+<!-- SYNC -->
+<section id="view-sync" class="view">
+  <h2 class="sy-h">CARGAR CATÁLOGO</h2>
+  <p class="sy-s">Descarga cientos de películas de terror desde TMDB para alimentar el oráculo</p>
+  <div class="sy-stats">
+    <div class="ss2"><span id="s-tot">—</span><span>Películas</span></div>
+    <div class="ss2"><span id="s-lib">—</span><span>En videoteca</span></div>
+    <div class="ss2"><span id="s-rat">—</span><span>Valoradas</span></div>
+  </div>
+  <div class="sy-bw" id="sy-bw">
+    <div class="sy-bg"><div class="sy-bf" id="sy-bf"></div></div>
+    <p class="sy-st" id="sy-st">Iniciando...</p>
+  </div>
+  <div style="display:flex;gap:1rem;justify-content:center;flex-wrap:wrap">
+    <button class="btn-primary" id="sync-btn" onclick="syncDB()" style="font-size:1.3rem;padding:.4rem 2rem .2rem">▶ CARGAR PELÍCULAS</button>
+    <button class="btn-redo" onclick="loadStats()">↺ ACTUALIZAR</button>
+  </div>
+  <p class="sy-note">La carga tarda 3–5 min · No cierres la pestaña · Solo hay que hacerlo una vez<br>Cuantas más páginas cargues, más preciso será el oráculo</p>
+</section>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const API='http://localhost:8000',TK='de2c000382982cd40306002f69cd32a2',TB='https://api.themoviedb.org/3',IMG='https://image.tmdb.org/t/p/';
+
+// cursor
+const $c=document.getElementById('cur'),$d=document.getElementById('dot');
+document.addEventListener('mousemove',e=>{$c.style.left=e.clientX+'px';$c.style.top=e.clientY+'px';$d.style.left=e.clientX+'px';$d.style.top=e.clientY+'px'});
+document.addEventListener('mousedown',()=>$c.style.transform='translate(-50%,-50%) scale(.7)');
+document.addEventListener('mouseup',()=>$c.style.transform='translate(-50%,-50%) scale(1)');
+
+let profile={},qIdx=0,excluded=[];
+
+const QS=[
+  {id:'mood',cat:'Estado de ánimo',txt:'¿Cómo quieres sentirte esta noche?',hint:'El oráculo adapta la experiencia a tu estado emocional',type:'single',key:'mood',cols:'c2',
+   opts:[{i:'😱',t:'Aterrorizado/a',d:'Quiero no poder dormir después'},{i:'😰',t:'Inquieto/a',d:'Un malestar que dure horas'},{i:'💀',t:'Entretenido/a',d:'Monstruos, acción y diversión'},{i:'🧠',t:'Reflexivo/a',d:'Algo que me haga pensar y dudar'},{i:'📼',t:'Nostálgico/a',d:'Un clásico, lo de antes era mejor'},{i:'🖤',t:'Melancólico/a',d:'Terror bello y triste a la vez'}]},
+  {id:'subgenres',cat:'Subgénero — elige todos los que quieras',txt:'¿Qué tipo de terror buscas?',hint:'Selección múltiple — el oráculo combinará tus preferencias',type:'multi',key:'subgenres',cols:'c3',
+   opts:[{i:'👻',t:'Fantasmas',d:'Espíritus, posesiones, casas embrujadas'},{i:'🔪',t:'Slasher',d:'Asesino en serie, supervivencia'},{i:'🧠',t:'Psicológico',d:'La mente es el mayor enemigo'},{i:'🧫',t:'Body Horror',d:'Cuerpos que se corrompen o transforman'},{i:'🌌',t:'Terror Cósmico',d:'Lo que no puedes entender ni ver'},{i:'📹',t:'Found Footage',d:'Grabado por las propias víctimas'},{i:'🌾',t:'Folk Horror',d:'Cultos, rituales, comunidades siniestras'},{i:'🧟',t:'Zombis',d:'Muertos vivientes y apocalipsis'},{i:'🧛',t:'Vampiros',d:'Inmortalidad, seducción y sangre'},{i:'👾',t:'Criatura / Monstruo',d:'Una bestia concreta que acecha'},{i:'🏰',t:'Gótico',d:'Atmósferas oscuras y romanticismo perturbador'},{i:'🛸',t:'Terror Sci-Fi',d:'El horror del futuro o del espacio'}]},
+  {id:'era',cat:'Época',txt:'¿De qué época quieres la película?',hint:'Cada era tiene su propio lenguaje del miedo',type:'single',key:'era',cols:'c2',
+   opts:[{i:'🎞️',t:'Antes de los 70',d:'Los orígenes del género, cine clásico'},{i:'📼',t:'Los 70 y los 80',d:'La edad dorada — el mejor terror jamás hecho'},{i:'🎬',t:'Los 90 y los 2000',d:'Postmodernismo, torture porn, remakes'},{i:'📡',t:'2010 hasta hoy',d:'El nuevo terror de autor'},{i:'🎲',t:'Me da igual',d:'El oráculo elige libremente'}]},
+  {id:'min_rating',cat:'Nota mínima exigida',txt:'¿Qué calidad mínima exiges?',hint:'Puntuación media de la audiencia en TMDB — de 1 (basura) a 10 (obra maestra)',type:'slider',key:'min_rating',min:4,max:8.5,step:.5,def:6,
+   labels:['4.0 — Cualquier cosa','6.0 — Decente','8.5 — Solo obras maestras'],fmt:v=>`Nota mínima: ${parseFloat(v).toFixed(1)} / 10`},
+  {id:'intensity',cat:'Nivel de gore y violencia',txt:'¿Cuánto contenido explícito aguantas?',hint:'Ajusta el límite de violencia y perturbación visual',type:'single',key:'intensity',cols:'c2',
+   opts:[{i:'🌫️',t:'Solo atmósfera',d:'Tensión pura, nada gore ni explícito'},{i:'🩸',t:'Algo de sangre',d:'Violencia moderada, nada excesivo'},{i:'💀',t:'Gore notable',d:'Sin problema con escenas fuertes'},{i:'☠️',t:'Sin límites',d:'Lo más brutal y perturbador que exista'}]},
+  {id:'origin',cat:'País / región de origen',txt:'¿De dónde quieres que venga tu miedo?',hint:'Cada cultura tiene sus propios demonios — la procedencia importa mucho',type:'single',key:'origin',cols:'c3',
+   opts:[{i:'🇺🇸',t:'Americano',d:'Hollywood, indie USA'},{i:'🇯🇵',t:'Asiático',d:'J-Horror, K-Horror, Tailandia'},{i:'🇪🇺',t:'Europeo',d:'Giallo italiano, nórdico, español, UK'},{i:'🌎',t:'Latinoamericano',d:'México, Argentina, Brasil'},{i:'🌍',t:'Cualquier país',d:'El oráculo no discrimina'}]},
+  {id:'setting',cat:'Escenario de la historia',txt:'¿Dónde quieres que ocurra?',hint:'El escenario define qué tipo de amenaza espera al protagonista',type:'single',key:'setting',cols:'c3',
+   opts:[{i:'🏠',t:'Casa o mansión',d:'El hogar se convierte en prisión'},{i:'🌲',t:'Naturaleza salvaje',d:'Bosque, montaña, océano, desierto'},{i:'🏙️',t:'Ciudad',d:'El horror entre la multitud'},{i:'🏨',t:'Recinto cerrado',d:'Hotel, hospital, búnker, colegio'},{i:'⛪',t:'Lugar sagrado',d:'Cementerio, iglesia, templo, culto'},{i:'🎲',t:'Sorpréndeme',d:'Cualquier escenario'}]},
+  {id:'protagonist',cat:'Tipo de protagonista',txt:'¿Con quién quieres vivir la historia?',hint:'El protagonista define completamente la perspectiva del terror',type:'single',key:'protagonist',cols:'c2',
+   opts:[{i:'🧒',t:'Niños o adolescentes',d:'La inocencia frente a lo oscuro'},{i:'👩',t:'Última superviviente',d:'Una mujer que lucha hasta el final'},{i:'🕵️',t:'Investigador o detective',d:'Alguien que busca la verdad'},{i:'👨‍👩‍👧',t:'Familia en peligro',d:'Los lazos familiares puestos a prueba'},{i:'😈',t:'Ver desde el lado oscuro',d:'El asesino o monstruo como centro'},{i:'🤷',t:'No importa',d:'Solo quiero buena película'}]},
+  {id:'plot_desc',cat:'Tu idea (opcional)',txt:'Describe con tus palabras qué buscas',hint:'Puedes ser tan vago o concreto como quieras — el oráculo lo interpretará',type:'textarea',key:'plot_desc',
+   placeholder:'Ej: "Algo lento, en un pueblo aislado, con un final que no se entiende del todo y que me haga dudar de lo que vi..."',optional:true},
+  {id:'avoid',cat:'Contenido a evitar (opcional)',txt:'¿Qué líneas rojas tienes?',hint:'El oráculo excluirá este tipo de contenido',type:'multi',key:'avoid',cols:'c2',optional:true,
+   opts:[{i:'🩸',t:'Gore extremo',d:'Mutilaciones y vísceras muy explícitas'},{i:'😱',t:'Solo jump scares',d:'Prefiero tensión real, no sobresaltos baratos'},{i:'🧒',t:'Daño a menores o animales',d:'Línea roja innegociable'},{i:'😵',t:'Perturbación extrema',d:'Nada nihilista ni desesperanzador'},{i:'✅',t:'Sin restricciones',d:'Aguanto absolutamente todo'}]},
+];
+
+function showV(name){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.getElementById('view-'+name).classList.add('active');
+  document.querySelectorAll('.nav-links a').forEach(a=>a.classList.remove('active'));
+  const n=document.getElementById('nav-'+name);if(n)n.classList.add('active');
+  window.scrollTo({top:0,behavior:'smooth'});
+  if(name==='library')loadLib();
+  if(name==='sync')loadStats();
+}
+
+function startSurvey(){
+  profile={};qIdx=0;excluded=getExcl();
+  document.getElementById('survey-overlay').classList.add('active');
+  showV('home');renderQ();
+}
+function closeSurvey(){document.getElementById('survey-overlay').classList.remove('active')}
+function getExcl(){try{return JSON.parse(localStorage.getItem('g_lib')||'[]').map(m=>m.tmdb_id).filter(Boolean)}catch{return[]}}
+
+function renderQ(){
+  const q=QS[qIdx],tot=QS.length;
+  document.getElementById('q-counter').textContent=`${qIdx+1} / ${tot}`;
+  document.getElementById('q-prog').style.width=((qIdx+1)/tot*100)+'%';
+  const isLast=qIdx===tot-1;
+  let h=`<p class="q-cat">${q.cat}</p><h2 class="q-txt">${q.txt}</h2>${q.hint?`<p class="q-hint">${q.hint}</p>`:''}`;
+  if(q.type==='single'||q.type==='multi'){
+    h+=`<div class="opts ${q.cols||'c2'}">`;
+    q.opts.forEach(o=>{
+      const s=q.type==='single'?profile[q.key]===o.t:(profile[q.key]||[]).includes(o.t);
+      h+=`<div class="opt${s?' sel':''}" onclick="pick(this,'${q.type}','${q.key}')"><span class="opt-ic">${o.i}</span><div><div class="opt-t">${o.t}</div><div class="opt-d">${o.d}</div></div></div>`;
+    });
+    h+='</div>';
+  }else if(q.type==='slider'){
+    const cv=profile[q.key]??q.def,pct=((cv-q.min)/(q.max-q.min)*100);
+    h+=`<div class="sl-wrap"><div class="sl-labels"><span>${q.labels[0]}</span><span>${q.labels[2]}</span></div>
+    <input type="range" min="${q.min}" max="${q.max}" step="${q.step||.5}" value="${cv}" style="--pct:${pct}%"
+           id="sl-${q.id}" oninput="onSl(this,'${q.key}','${q.id}')">
+    <div class="sl-val" id="sv-${q.id}">${q.fmt?q.fmt(cv):cv}</div></div>`;
+    if(!profile[q.key])profile[q.key]=q.def;
+  }else if(q.type==='textarea'){
+    h+=`<textarea class="q-ta" id="ta-${q.id}" placeholder="${q.placeholder||''}" oninput="profile['${q.key}']=this.value">${profile[q.key]||''}</textarea>`;
+  }
+  h+=`<div class="q-nav">
+    ${qIdx>0?`<button class="btn-back" onclick="prevQ()">◀ ATRÁS</button>`:'<div></div>'}
+    <div style="display:flex;gap:.8rem;align-items:center">
+      ${q.optional?`<button class="skip-btn" onclick="skipQ()">Saltar</button>`:''}
+      <button class="btn-fwd" onclick="nextQ()">${isLast?'▶ INVOCAR':'SIGUIENTE ▶'}</button>
+    </div>
+  </div>`;
+  document.getElementById('q-body').innerHTML=h;
+}
+
+function pick(el,type,key){
+  if(type==='single'){el.closest('.opts').querySelectorAll('.opt').forEach(o=>o.classList.remove('sel'));el.classList.add('sel');profile[key]=el.querySelector('.opt-t').textContent;}
+  else{el.classList.toggle('sel');profile[key]=Array.from(el.closest('.opts').querySelectorAll('.opt.sel')).map(o=>o.querySelector('.opt-t').textContent);}
+}
+function onSl(el,key,id){
+  const v=parseFloat(el.value);profile[key]=v;
+  const pct=((v-parseFloat(el.min))/(parseFloat(el.max)-parseFloat(el.min))*100);
+  el.style.setProperty('--pct',pct+'%');
+  const q=QS.find(q=>q.id===id);if(q&&q.fmt)document.getElementById('sv-'+id).textContent=q.fmt(v);
+}
+function prevQ(){if(qIdx>0){qIdx--;renderQ();}}
+function skipQ(){qIdx++;if(qIdx>=QS.length)invoke();else renderQ();}
+function nextQ(){
+  const q=QS[qIdx];
+  if(!q.optional&&q.type==='single'&&!profile[q.key]){toast('Elige una opción para continuar');return;}
+  if(!q.optional&&q.type==='multi'&&(!profile[q.key]||!profile[q.key].length)){toast('Selecciona al menos una opción');return;}
+  qIdx++;if(qIdx>=QS.length)invoke();else renderQ();
+}
+
+const LDMSGS=['REBOBINANDO EL CATÁLOGO...','CONSULTANDO LAS CINTAS...','EL ORÁCULO EXAMINA TU PERFIL...','AJUSTANDO EL TRACKING...','LAS SOMBRAS ELIGEN POR TI...','CINTA CASI LISTA...'];
+async function invoke(){
+  closeSurvey();showV('loading');profile.excluded_ids=excluded;
+  const el=document.getElementById('ld-msg');let mi=0;
+  el.style.transition='opacity .3s';
+  const iv=setInterval(()=>{mi=(mi+1)%LDMSGS.length;el.style.opacity=0;setTimeout(()=>{el.textContent=LDMSGS[mi];el.style.opacity=1;},300);},1900);
+  try{
+    const r=await fetch(`${API}/api/recommend`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({profile,limit:5})});
+    clearInterval(iv);
+    const d=await r.json();
+    
+    // --- GAG RADIACTIVO ---
+    if(d.radioactive_troll) {
+        document.body.style.backgroundColor = "#00ff00";
+        document.body.style.backgroundImage = "repeating-linear-gradient(45deg, #000 0, #000 20px, #00ff00 20px, #00ff00 40px)";
+        document.body.innerHTML = `
+            <div style="display:flex; flex-direction:column; justify-content:center; align-items:center; height:100vh; text-align:center;">
+                <h1 style="color:black; font-size: 5rem; font-family: monospace; background: #00ff00; padding: 20px; border: 10px solid black;">
+                    ☢️ ERROR CRÍTICO ☢️
+                </h1>
+                <p style="color:black; font-size: 2rem; background: #00ff00; font-weight: bold; padding: 20px; max-width: 800px;">
+                    ${d.message}
+                </p>
+                <p style="color:black; font-size: 1.5rem; background: #00ff00; padding: 10px; margin-top: 30px;">
+                    Recarga la página (F5) si has aprendido la lección.
+                </p>
+            </div>
+        `;
+        return;
+    }
+    // -----------------------
+
+    if(d.results&&d.results.length>0)renderResults(d.results);
+    else renderResults(await tmdbFallback());
+  }catch{clearInterval(iv);try{renderResults(await tmdbFallback());}catch{showV('home');toast('Error. ¿Está el servidor corriendo?');}}
+}
+
+// ── TMDB FALLBACK ─────────────────────────────────────
+async function tmdbFallback(){
+  const eM={'Antes de los 70':{gte:'1920-01-01',lte:'1969-12-31'},'Los 70 y los 80':{gte:'1970-01-01',lte:'1989-12-31'},'Los 90 y los 2000':{gte:'1990-01-01',lte:'2009-12-31'},'2010 hasta hoy':{gte:'2010-01-01',lte:'2026-12-31'},'Me da igual':{gte:'1920-01-01',lte:'2026-12-31'}};
+  const lM={'Americano':'en','Asiático':'ja','Europeo':'fr','Latinoamericano':'es'};
+  const dates=eM[profile.era]||{gte:'1920-01-01',lte:'2026-12-31'};
+  const minR=profile.min_rating||6;
+  const lang=lM[profile.origin];
+  const sort=profile.mood==='Nostálgico/a'?'vote_average.desc':'popularity.desc';
+  let url=`${TB}/discover/movie?api_key=${TK}&with_genres=27&sort_by=${sort}&vote_count.gte=100&vote_average.gte=${minR}&primary_release_date.gte=${dates.gte}&primary_release_date.lte=${dates.lte}&language=es-ES`;
+  if(lang)url+=`&with_original_language=${lang}`;
+  const r=await fetch(url);const d=await r.json();
+  return(d.results||[]).slice(0,5).map(m=>({tmdb_id:m.id,title:m.title,year:m.release_date?parseInt(m.release_date):null,overview:m.overview,poster_path:m.poster_path,vote_average:m.vote_average,vote_count:m.vote_count,popularity:m.popularity,score:Math.round(m.vote_average*9)}));
+}
+
+// ── RENDER RESULTS ────────────────────────────────────
+function renderResults(movies){
+  showV('results');
+  if(!movies||!movies.length){
+    document.getElementById('res-content').innerHTML='<div style="text-align:center;padding:4rem;opacity:.3;font-family:var(--f4);font-size:.85rem">SIN RESULTADOS — Carga el catálogo primero desde la sección CATÁLOGO</div>';return;
+  }
+  const mT={'Aterrorizado/a':'ESTA NOCHE NO DUERMES','Inquieto/a':'ALGO TE VA A PERSEGUIR','Entretenido/a':'UNA NOCHE EN EL VIDEOCLUB','Reflexivo/a':'PARA QUE DUDES DE TODO','Nostálgico/a':'UN CLÁSICO QUE NO OLVIDARÁS','Melancólico/a':'BELLEZA EN LAS TINIEBLAS'};
+  document.getElementById('res-title').textContent=mT[profile.mood]||'TU PELÍCULA ESTA NOCHE';
+  const[main,...rest]=movies;
+  let h=renderMC(main);
+  if(rest.length){h+=`<div class="sec-lbl">TAMBIÉN TE PUEDE INTERESAR</div><div class="sec-grid">${rest.map(renderSC).join('')}</div>`;}
+  document.getElementById('res-content').innerHTML=h;
+  setTimeout(()=>{const f=document.querySelector('.sc-fill');if(f)f.style.width=(((main.vote_average||5)/10)*100)+'%';},120);
+}
+
+function pImg(path,sz='w342'){return path?`${IMG}${sz}${path}`:null}
+function noP(title){return `<div class="no-poster"><span>📼</span><span>${esc(title)}</span></div>`}
+
+function renderMC(m){
+  const img=pImg(m.poster_path,'w500');
+  const critic = m.critic_score || '?';
+  const audience = m.audience_score || (m.vote_average ? `${Math.round(m.vote_average*10)}%` : '?');
+  const synopsis = m.overview_es || m.overview || 'El oráculo guarda silencio sobre esta historia...';
+  const subs=parseSubs(m.subgenres);
+  
+  return `<div style="display: flex; border: 2px solid var(--red); background: var(--panel); margin-bottom: 2rem; box-shadow: 4px 4px 0 var(--red), 0 0 28px rgba(204,0,0,.14); position: relative; overflow: hidden;">
+    <div class="mc-badge">▶ SELECCIÓN DEL ORÁCULO</div>
+    
+    <div style="flex-shrink: 0; width: 300px; min-height: 450px; background: #0d0d0d; position: relative; border-right: 2px solid var(--red);">
+      ${img?`<img src="${img}" alt="${esc(m.title)}" style="width: 100%; height: 100%; object-fit: cover; display: block;">` : noP(m.title)}
+      <div class="pw-vhs"></div>
+    </div>
+
+    <div style="flex-grow: 1; padding: 2.5rem 2rem 1.5rem; display: flex; flex-direction: column;">
+      
+      <div class="tags" style="margin-bottom: 1rem;">
+        ${m.year?`<span class="tag ty">${m.year}</span>`:''}
+        <span class="tag tl">${(m.language||'').toUpperCase()}</span>
+        ${subs.map(s=>`<span class="tag tg">${s}</span>`).join('')}
+      </div>
+      <h3 style="font-family: var(--f1); font-size: 2.5rem; color: var(--white); line-height: 1; margin-bottom: 0.5rem; text-shadow: 2px 0 0 rgba(255,0,0,.4); text-transform: uppercase;">
+        ${esc(m.title)}
+      </h3>
+      ${m.tagline?`<p style="font-family: var(--f4); font-size: 0.9rem; color: var(--red-b); font-style: italic; margin-bottom: 1.5rem;">"${esc(m.tagline)}"</p>`:''}
+
+      <div style="display: flex; gap: 3rem; margin-bottom: 1.5rem; border-top: 1px dashed var(--border); border-bottom: 1px dashed var(--border); padding: 1rem 0;">
+        <div>
+          <span style="font-family: var(--f4); font-size: 0.8rem; color: var(--grey); display: block; margin-bottom: 5px;">CRÍTICA ESPECIALIZADA</span>
+          <span style="font-family: var(--f1); font-size: 2.2rem; color: var(--white); text-shadow: 0 0 8px rgba(255,255,255,0.3);">${critic}</span>
+        </div>
+        <div>
+          <span style="font-family: var(--f4); font-size: 0.8rem; color: var(--grey); display: block; margin-bottom: 5px;">PÚBLICO GENERAL</span>
+          <span style="font-family: var(--f1); font-size: 2.2rem; color: var(--white); text-shadow: 0 0 8px rgba(255,255,255,0.3);">${audience}</span>
+        </div>
+      </div>
+
+      <div style="flex-grow: 1; margin-bottom: 1.5rem;">
+        <span style="font-family: var(--f4); font-size: 0.8rem; color: var(--red-b); display: block; margin-bottom: 0.5rem; letter-spacing: 0.1em;">> REPORTE DEL ORÁCULO:</span>
+        <p style="font-family: var(--f4); font-size: 1rem; color: var(--grey); line-height: 1.6; text-align: justify; margin: 0;">
+          ${esc(synopsis)}
+        </p>
+      </div>
+
+      <div class="ca" style="margin-top: auto;">
+        <button class="btn-watch" onclick="addLib(${m.tmdb_id},'${escJ(m.title)}','${m.poster_path||''}',${m.year||0})">📼 LA VEO ESTA NOCHE</button>
+        <button class="btn-skip-r" onclick="skip(${m.tmdb_id})">✕ SALTAR</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+function renderSC(m){
+  const img=pImg(m.poster_path,'w185'),sc=m.vote_average?parseFloat(m.vote_average).toFixed(1):'?';
+  return`<div class="sc"><div class="sp">${img?`<img src="${img}" alt="${esc(m.title)}" loading="lazy" onerror="this.parentNode.innerHTML='<div style=\\'height:135px;display:flex;align-items:center;justify-content:center;font-size:2rem\\'>📼</div>'">`:''}<div class="sp-vhs"></div></div>
+    <div class="sb"><p class="st">${esc(m.title)}</p><p class="sy">${m.year||'—'}</p><p class="ss">★ ${sc}</p><p class="so">${esc(m.overview||'')}</p>
+    <div class="sa"><button class="bsw" onclick="addLib(${m.tmdb_id},'${escJ(m.title)}','${m.poster_path||''}',${m.year||0})">📼 LA VEO</button><button class="bsk" onclick="skip(${m.tmdb_id})">✕</button></div>
+  </div></div>`;
+}
+
+// ── LIBRARY ───────────────────────────────────────────
+async function addLib(id,title,poster,year){
+  const lib=gLib();if(!lib.find(m=>m.tmdb_id===id)){lib.push({tmdb_id:id,title,poster_path:poster,year,watched:1});sLib(lib);}
+  try{await fetch(`${API}/api/library/add`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({tmdb_id:id,title,poster_path:poster,year,watched:1})});}catch{}
+  excluded.push(id);toast(`"${title}" añadida a tu videoteca`);
+}
+async function skip(id){excluded.push(id);profile.excluded_ids=excluded;toast('Saltado — rebobinando...');await invoke();}
+function gLib(){try{return JSON.parse(localStorage.getItem('g_lib')||'[]')}catch{return[]}}
+function sLib(l){localStorage.setItem('g_lib',JSON.stringify(l))}
+
+async function loadLib(){
+  const el=document.getElementById('lib-content');let lib=[];
+  try{const r=await fetch(`${API}/api/library`);lib=(await r.json()).library||[];}
+  catch{lib=gLib();}
+  if(!lib.length){el.innerHTML=`<div class="lib-empty"><span>📼</span><p>Tu videoteca está vacía.<br>Consulta el oráculo y acepta sus recomendaciones.</p></div>`;return;}
+  el.innerHTML=`<div class="lib-grid">${lib.map(m=>{
+    const img=pImg(m.poster_path,'w185'),r=m.rating||0;
+    const skulls=[1,2,3,4,5].map(i=>`<button class="skb${i<=r?' lit':''}" onclick="setR(${m.tmdb_id},${i},this)">💀</button>`).join('');
+    return`<div class="lc" id="lc-${m.tmdb_id}">
+      <div class="lp">${img?`<img src="${img}" alt="${esc(m.title)}" loading="lazy">`:'<div style="display:flex;align-items:center;justify-content:center;height:100%;font-size:2rem;color:var(--red)">📼</div>'}</div>
+      <div class="lb"><div class="lt">${esc(m.title)}</div><div class="ly">${m.year||'—'}</div>
+        <div class="skr" id="sr-${m.tmdb_id}" data-r="${r}">${skulls}</div>
+        <textarea class="lrv" id="rv-${m.tmdb_id}" placeholder="Tu reseña...">${m.review||''}</textarea>
+        <div class="la"><button class="bsv" onclick="saveR(${m.tmdb_id})">💾 GUARDAR</button><button class="brm" onclick="rmLib(${m.tmdb_id},'${escJ(m.title)}')">ELIMINAR</button><span class="sok" id="ok-${m.tmdb_id}">✓ GUARDADO</span></div>
+      </div></div>`;
+  }).join('')}</div>`;
+}
+function setR(id,v,btn){const row=document.getElementById('sr-'+id);row.querySelectorAll('.skb').forEach((b,i)=>b.classList.toggle('lit',i<v));row.dataset.r=v;}
+async function saveR(id){
+  const rating=parseInt(document.getElementById('sr-'+id).dataset.r)||0,review=document.getElementById('rv-'+id).value;
+  const lib=gLib(),i=lib.findIndex(m=>m.tmdb_id===id);if(i>=0){lib[i].rating=rating;lib[i].review=review;sLib(lib);}
+  try{await fetch(`${API}/api/library/rate`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({tmdb_id:id,rating,review})});}catch{}
+  const ok=document.getElementById('ok-'+id);ok.classList.add('show');setTimeout(()=>ok.classList.remove('show'),2000);
+}
+async function rmLib(id,title){
+  sLib(gLib().filter(m=>m.tmdb_id!==id));
+  try{await fetch(`${API}/api/library/remove`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({tmdb_id:id})});}catch{}
+  const c=document.getElementById('lc-'+id);if(c){c.style.transition='opacity .3s';c.style.opacity='0';setTimeout(()=>c.remove(),320);}
+  toast(`"${title}" eliminada`);
+}
+
+// ── DB SYNC ───────────────────────────────────────────
+async function syncDB(){
+  const btn=document.getElementById('sync-btn');if(btn.disabled)return;
+  btn.disabled=true;btn.textContent='⏳ CARGANDO...';
+  document.getElementById('sy-bw').style.display='block';
+  let total=0;
+  for(let p=1;p<=30;p++){
+    const pct=Math.round(p/30*100);
+    document.getElementById('sy-bf').style.width=pct+'%';
+    document.getElementById('sy-st').textContent=`Página ${p}/30 — ${total} películas cargadas`;
+    try{
+      const movies=await fetchTMDBP(p);if(!movies.length)break;
+      const r=await fetch(`${API}/api/movies/bulk`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({movies:movies.map(enrich)})});
+      if(r.ok){const d=await r.json();total+=d.inserted||0;}
+    }catch{}
+    await sl(260);
+  }
+  btn.disabled=false;btn.textContent='▶ CARGAR PELÍCULAS';
+  document.getElementById('sy-st').textContent=`✓ Listo: ${total} películas nuevas en el catálogo`;
+  loadStats();toast(`Catálogo actualizado: ${total} películas nuevas`);
+}
+
+async function fetchTMDBP(page){
+  const r=await fetch(`${TB}/discover/movie?api_key=${TK}&with_genres=27&sort_by=vote_count.desc&vote_count.gte=50&page=${page}&language=es-ES`);
+  if(!r.ok)return[];return(await r.json()).results||[];
+}
+
+function enrich(m){
+  const txt=((m.title||'')+(m.overview||'')).toLowerCase();
+  const rules={supernatural:['ghost','fantasma','espíritu','demon','demonio','haunted','possession','exorcism'],slasher:['killer','asesino','murder','massacre','stalker','serial killer'],psychological:['psychological','paranoia','sanity','psicológico','mente','delusion','identity'],body_horror:['mutation','flesh','transformation','parasite','body horror','carne','infection'],cosmic:['cosmic','eldritch','ancient','lovecraft','cult','void','unknowable'],found_footage:['found footage','footage','recording','grabación','documentary'],folk_horror:['folk','pagan','ritual','cult','culto','village','aldea','tradition'],zombie:['zombie','undead','muertos vivientes','outbreak','plague','virus'],vampire:['vampire','vampiro','blood','immortal','nosferatu'],creature:['monster','monstruo','creature','criatura','beast','alien','mutant'],gothic:['gothic','gótico','castle','castillo','victorian','dark romance'],scifi_horror:['alien','space','spacecraft','extraterrestrial','sci-fi','espacio']};
+  const subs=[];for(const[tag,kws]of Object.entries(rules)){if(kws.some(k=>txt.includes(k)))subs.push(tag);}
+  const moods=[];
+  if(['brutal','gore','slaughter','graphic','blood','violence'].some(w=>txt.includes(w)))moods.push('intense');
+  if(['slow','atmospheric','dread','eerie','unsettling','subtle'].some(w=>txt.includes(w)))moods.push('atmospheric');
+  if(['twist','unexpected','shocking','mystery'].some(w=>txt.includes(w)))moods.push('twist');
+  const oc=(m.origin_country||[])[0]||(m.production_countries||[])[0]?.iso_3166_1||'';
+  return{tmdb_id:m.id,title:m.title,original_title:m.original_title,year:m.release_date?parseInt(m.release_date):null,overview:m.overview,poster_path:m.poster_path,backdrop_path:m.backdrop_path,vote_average:m.vote_average,vote_count:m.vote_count,popularity:m.popularity,subgenres:subs.join(','),mood_tags:moods.join(','),atmosphere:moods.includes('atmospheric')?'slow_burn':'standard',themes:txt.substring(0,200),origin_country:oc,language:m.original_language};
+}
+
+async function loadStats(){
+  try{
+    const r=await fetch(`${API}/api/stats`);const d=await r.json();
+    document.getElementById('s-tot').textContent=d.total_movies||0;
+    document.getElementById('s-lib').textContent=d.library_count||0;
+    document.getElementById('s-rat').textContent=d.rated_count||0;
+    const hs=document.getElementById('home-stats');if(hs)hs.innerHTML=`CATÁLOGO ACTIVO — <span>${d.total_movies||0}</span> CINTAS EN EL ARCHIVO`;
+  }catch{const hs=document.getElementById('home-stats');if(hs)hs.innerHTML=`MODO DIRECTO TMDB — <span>sin servidor local</span>`;}
+}
+
+function parseSubs(str){if(!str)return[];const l={supernatural:'Sobrenatural',slasher:'Slasher',psychological:'Psicológico',body_horror:'Body Horror',cosmic:'Cósmico',found_footage:'Found Footage',folk_horror:'Folk Horror',zombie:'Zombis',vampire:'Vampiros',creature:'Criatura',gothic:'Gótico',scifi_horror:'Sci-Fi'};return str.split(',').filter(Boolean).slice(0,3).map(s=>l[s.trim()]||s);}
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+function escJ(s){return String(s||'').replace(/'/g,'\\x27').replace(/"/g,'\\x22')}
+function sl(ms){return new Promise(r=>setTimeout(r,ms))}
+function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),3200);}
+
+document.addEventListener('DOMContentLoaded',()=>{
+  loadStats();
+  document.getElementById('survey-overlay').addEventListener('click',function(e){if(e.target===this)closeSurvey();});
+});
+</script>
+</body>
+</html>
